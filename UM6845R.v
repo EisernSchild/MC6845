@@ -35,10 +35,16 @@ module UM6845R
 	output reg       HSYNC,
 	output           DE,
 	output           FIELD,
+	
+	// test
+	output           ROW_IND,
 
 	output    [13:0] MA,
 	output     [4:0] RA
 );
+
+// test
+assign ROW_IND = row_new;
 
 assign FIELD = ~field & interlace[0];
 

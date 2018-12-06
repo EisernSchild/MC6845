@@ -226,6 +226,9 @@ architecture basic of emu is
 		HSYNC : out std_logic;
 		DE : out std_logic;
 		FIELD : out std_logic;
+		
+		-- test
+		ROW_IND : out std_logic;
 
 		MA : out std_logic_vector(13 downto 0);
 		RA : out std_logic_vector(4 downto 0)
@@ -275,6 +278,9 @@ architecture basic of emu is
 	
 	signal MA : std_logic_vector(13 downto 0);
 	signal RA : std_logic_vector(4 downto 0);
+	
+	-- test
+	signal ROW_IND : std_logic;
 
 begin
 	
@@ -357,6 +363,9 @@ begin
 		if rising_edge(HSYNC) then
 			linecount <= linecount + 1;
 		end if;
+		if (DE = '0') then
+			linecount <= (others => '0');
+		end if;		 
 	end process generate_lc;
 	
 -- module file "video.sv" implementation
@@ -366,8 +375,8 @@ begin
 		clk => Clk_VGA,                
 		reset_n => '1',
 		
-		VGA_R4 => "0000", -- linecount(3 downto 0),
-		VGA_G4 => "0000", -- linecount(7 downto 4),
+		VGA_R4 => ROW_IND & "000", -- linecount(3 downto 0),
+		VGA_G4 => ROW_IND & "000", -- linecount(7 downto 4),
 		VGA_B4 => linecount(11 downto 8),		
 
 		VGA_HS => V_HS,
@@ -401,6 +410,8 @@ begin
 		HSYNC  => HSYNC,
 		DE => DE,
 		FIELD => FIELD,
+		
+		ROW_IND => ROW_IND,
 
 		MA  => MA,
 		RA  => RA
@@ -430,7 +441,7 @@ begin
 	-- R1_h_displayed  32 20 - 32*8 = 256 pixel
 	-- R2_h_sync_pos   33 21 - 33*8 = 264 pixel
 	-- R3_v_sync_width 03 03 -  3*8 =  24 pixel
-	-- R4_v_total      36 26 - 36*8 = 288 pixel
+	-- R4_v_total      36 24 - 36*8 = 288 pixel
 	-- R5_v_total_adj  00 00 - 0 pixel
 	-- R6_v_displayed  32 20 - 32*8 = 256 pixel
 	-- R7_v_sync_pos   32 20 - 32*8 = 256 pixel
@@ -482,7 +493,7 @@ begin
 					when 9 => 	nCS <= '0'; -- reg 4
 										R_nW <= '0';
 										RS <= '1';
-										DI <= x"26";
+										DI <= x"24";
 					when 10 => 	nCS <= '0'; 
 										R_nW <= '0';
 										RS <= '0';
