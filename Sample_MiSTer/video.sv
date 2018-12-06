@@ -59,12 +59,30 @@ module video
 //=======================================================
 wire [11:0] h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp; 
 
+//-- video mode (256x256)
+//--
+//-- Horizontal : 
+//-- Total time for each line       31.778	µs = 320
+//-- Front porch               (A)   0.636	µs =   8
+//-- Sync pulse length         (B)   3.813	µs =  40
+//-- Back porch                (C)   1.907	µs =  16
+//-- Active video              (D)	 25.422	µs = 256
+//
+//-- Vertical :
+//-- Total time for each frame      16.683	ms = 288
+//-- Front porch               (A)   0.318	ms =   8
+//-- Sync pulse length         (B)   0.064	ms =   8
+//-- Back porch                (C)   1.048	ms =  16
+//-- Active video              (D)  15.253	ms = 256
+
+assign {h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp} = {12'd256,	12'd8, 12'd40, 12'd16, 12'd256, 12'd8, 12'd8, 12'd16}; 
+	 	 
+
  //=====Mode:640x350		70		25.175	assign {h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp} = {640,	16,	96,	48,	350,	37,	2,	60};	 	 
  //=====Mode:640x350		85		31.5		assign {h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp} = {640,	32,	64,  	96,	350,	32,	3,	60};  	 
  //=====Mode:640x400		70		25.175	assign {h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp} = {640,	16,	96,  	48,	400,	12,	2,	35}; 	 	 
  //=====Mode:640x400		85		31.5		assign {h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp} = {640,	32,	64,	96,	400,	1,		3,	41}; 	 	 
- //=====Mode:640x480		60		25.175	
- assign {h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp} = {12'd640,	12'd16,	12'd96,	12'd48,	12'd480,	12'd10,	12'd2,	12'd33}; 	 	 
+ //=====Mode:640x480		60		25.175	assign {h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp} = {12'd640,	12'd16,	12'd96,	12'd48,	12'd480,	12'd10,	12'd2,	12'd33}; 	 	 
  //=====Mode:640x480		73		31.5		assign {h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp} = {640,	24,	40,	128,	480,	9,		2,	29}; 	 	 
  //=====Mode:640x480		75		31.5		assign {h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp} = {640,	16,	64,	120,	480,	1,		3,	16}; 	 	 
  //=====Mode:640x480		85		36			assign {h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp} = {640,	56,	56,	80,	480,	1,		3,	25};  	 
