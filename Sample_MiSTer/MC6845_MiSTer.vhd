@@ -207,6 +207,38 @@ architecture basic of emu is
 	);
 	end component video;
 	
+-- entity "crtc6845.vhd" definition
+	component crtc6845 is port 
+	(
+		MA     : out STD_LOGIC_VECTOR (13 downto 0);
+		RA     : out STD_LOGIC_VECTOR (4 downto 0);
+		HSYNC  : out STD_LOGIC;
+		VSYNC  : out STD_LOGIC;
+		DE     : out STD_LOGIC;
+		CURSOR : out STD_LOGIC;
+		LPSTBn : in STD_LOGIC;
+		E      : in STD_LOGIC;
+		RS     : in STD_LOGIC;
+		CSn    : in STD_LOGIC;
+		RW     : in STD_LOGIC;
+		D      : inout STD_LOGIC_VECTOR (7 downto 0);
+		RESETn : in STD_LOGIC;
+		CLK    : in STD_LOGIC;
+		-- not standard
+		REG_INIT: in STD_LOGIC;
+		--
+		Hend: inout STD_LOGIC;
+		HS: inout STD_LOGIC;
+		CHROW_CLK: inout STD_LOGIC;
+		Vend: inout STD_LOGIC;
+		SLadj: inout STD_LOGIC;
+		H: inout STD_LOGIC;
+		V: inout STD_LOGIC;
+		CURSOR_ACTIVE: inout STD_LOGIC;
+		VERT_RST: inout STD_LOGIC
+	 );
+	end component crtc6845;
+		
 -- module "UM6845R.v" definition in VHDL
 	component UM6845R is port
 	(
@@ -226,10 +258,6 @@ architecture basic of emu is
 		HSYNC : out std_logic;
 		DE : out std_logic;
 		FIELD : out std_logic;
-		
-		-- test
-		ROW_IND : out std_logic;
-		HCC : out std_logic_vector(7 downto 0);
 
 		MA : out std_logic_vector(13 downto 0);
 		RA : out std_logic_vector(4 downto 0)
@@ -268,7 +296,6 @@ architecture basic of emu is
 	signal ENABLE : std_logic;    
 	signal nCS : std_logic;    
 	signal R_nW : std_logic;    
-	signal RS : std_logic;    
 	signal DI : std_logic_vector(7 downto 0);  
 	signal DO : std_logic_vector(7 downto 0);
 	
@@ -279,7 +306,29 @@ architecture basic of emu is
 	
 	signal MA : std_logic_vector(13 downto 0);
 	signal RA : std_logic_vector(4 downto 0);
+		
+	signal CURSOR :  STD_LOGIC;
+	signal LPSTBn :  STD_LOGIC;
+	signal E      :  STD_LOGIC;
+	signal RS     :  STD_LOGIC;
+	signal CSn    :  STD_LOGIC;
+	signal RW     :  STD_LOGIC;
+	signal D      :  STD_LOGIC_VECTOR(7 downto 0);
+	signal RESETn :  STD_LOGIC;
 	
+	-- not standard
+	signal REG_INIT: STD_LOGIC;
+	--
+	signal Hend: STD_LOGIC;
+	signal HS: STD_LOGIC;
+	signal CHROW_CLK: STD_LOGIC;
+	signal Vend: STD_LOGIC;
+	signal SLadj: STD_LOGIC;
+	signal H: STD_LOGIC;
+	signal V: STD_LOGIC;
+	signal CURSOR_ACTIVE: STD_LOGIC;
+	signal VERT_RST: STD_LOGIC;
+
 	-- test
 	signal ROW_IND : std_logic;
 	signal HCC : std_logic_vector(7 downto 0);
@@ -377,9 +426,9 @@ begin
 		clk => Clk_VGA,                
 		reset_n => '1',
 		
-		VGA_R4 => HCC(7 downto 4), -- ROW_IND & "000", -- linecount(3 downto 0),
-		VGA_G4 => ROW_IND & "000", -- linecount(7 downto 4),
-		VGA_B4 => HCC(3 downto 0), -- linecount(11 downto 8),		
+		VGA_R4 => RA(3 downto 0), -- HCC(7 downto 4), -- ROW_IND & "000", -- linecount(3 downto 0),
+		VGA_G4 => H & "000", -- linecount(7 downto 4),
+		VGA_B4 => linecount(3 downto 0),		
 
 		VGA_HS => V_HS,
 		VGA_VS => V_VS,
@@ -400,35 +449,65 @@ begin
 	end process;
 	
 -- module file "UM6845R.v" implementation
-	CRTC_TYPE <= '0';
-	ENABLE <= '1';    
-	
-	UM6845R1 : UM6845R
-	port map
+--	CRTC_TYPE <= '1';
+--	ENABLE <= '1';    
+--	
+--	UM6845R1 : UM6845R
+--	port map
+--	(
+--		CLOCK => Clk_VGA, -- CLOCK,   
+--		CLKEN => CLKEN,    
+--		nRESET => '1', -- nRESET,  
+--		CRTC_TYPE => CRTC_TYPE,  
+--
+--		ENABLE => ENABLE, 
+--		nCS => nCS ,
+--		R_nW => R_nW,
+--		RS => RS,
+--		DI => DI,
+--		DO => DO,
+--		
+--		VSYNC  => VSYNC,
+--		HSYNC  => HSYNC,
+--		DE => DE,
+--		FIELD => FIELD,
+--
+--		MA  => MA,
+--		RA  => RA
+--	);
+
+-- entity "crtc6845.vhd" implementation
+	E <= '1';
+
+	crtc6845i : crtc6845
+	port map 
 	(
-		CLOCK => Clk_VGA, -- CLOCK,   
-		CLKEN => CLKEN,    
-		nRESET => '1', -- nRESET,  
-		CRTC_TYPE => CRTC_TYPE,  
-
-		ENABLE => ENABLE, 
-		nCS => nCS ,
-		R_nW => R_nW,
-		RS => RS,
-		DI => DI,
-		DO => DO,
-		
-		VSYNC  => VSYNC,
-		HSYNC  => HSYNC,
-		DE => DE,
-		FIELD => FIELD,
-		
-		-- test
-		ROW_IND => ROW_IND,
-		HCC => HCC,
-
 		MA  => MA,
-		RA  => RA
+		RA  => RA,
+		HSYNC  => HSYNC,
+		VSYNC  => VSYNC,
+		DE => DE,
+		CURSOR => CURSOR,
+		LPSTBn => LPSTBn,
+		E => E,
+		RS => RS,
+		CSn => CSn,
+		RW => RW,
+		D => D,
+		RESETn => '1', -- RESETn,
+		CLK => CLKEN,
+		-- not standard
+		REG_INIT => REG_INIT,
+		--
+		Hend => Hend,
+		HS => HS,
+		CHROW_CLK => CHROW_CLK,
+		Vend => Vend,
+		SLadj => SLadj,
+		H => H,
+		V => V,
+		CURSOR_ACTIVE => CURSOR_ACTIVE,
+		VERT_RST => VERT_RST
 	);
 	
 	
@@ -468,138 +547,138 @@ begin
 	begin
 		if rising_edge(Clk_VGA) then
 			case init_counter is
-					when 0 => 	nCS <= '0'; 
-										R_nW <= '0';
+					when 0 => 	CSn <= '0'; 
+										RW <= '0';
 										RS <= '0';
-										DI <= x"00";
-					when 1 => 	nCS <= '0'; -- reg 0
-										R_nW <= '0';
+										D <= x"00";
+					when 1 => 	CSn <= '0'; -- reg 0
+										RW <= '0';
 										RS <= '1';
-										DI <= x"28";
-					when 2 => 	nCS <= '0'; 
-										R_nW <= '0';
+										D <= x"28";
+					when 2 => 	CSn <= '0'; 
+										RW <= '0';
 										RS <= '0';
-										DI <= x"01";
-					when 3 => 	nCS <= '0'; -- reg 1
-										R_nW <= '0';
+										D <= x"01";
+					when 3 => 	CSn <= '0'; -- reg 1
+										RW <= '0';
 										RS <= '1';
-										DI <= x"20";
-					when 4 => 	nCS <= '0'; 
-										R_nW <= '0';
+										D <= x"20";
+					when 4 => 	CSn <= '0'; 
+										RW <= '0';
 										RS <= '0';
-										DI <= x"02";
-					when 5 => 	nCS <= '0'; -- reg 2
-										R_nW <= '0';
+										D <= x"02";
+					when 5 => 	CSn <= '0'; -- reg 2
+										RW <= '0';
 										RS <= '1';
-										DI <= x"21";
-					when 6 => 	nCS <= '0'; 
-										R_nW <= '0';
+										D <= x"21";
+					when 6 => 	CSn <= '0'; 
+										RW <= '0';
 										RS <= '0';
-										DI <= x"03";
-					when 7 => 	nCS <= '0'; -- reg 3
-										R_nW <= '0';
+										D <= x"03";
+					when 7 => 	CSn <= '0'; -- reg 3
+										RW <= '0';
 										RS <= '1';
-										DI <= x"03";
-					when 8 => 	nCS <= '0'; 
-										R_nW <= '0';
+										D <= x"03";
+					when 8 => 	CSn <= '0'; 
+										RW <= '0';
 										RS <= '0';
-										DI <= x"04";
-					when 9 => 	nCS <= '0'; -- reg 4
-										R_nW <= '0';
+										D <= x"04";
+					when 9 => 	CSn <= '0'; -- reg 4
+										RW <= '0';
 										RS <= '1';
-										DI <= x"24";
-					when 10 => 	nCS <= '0'; 
-										R_nW <= '0';
+										D <= x"24";
+					when 10 => 	CSn <= '0'; 
+										RW <= '0';
 										RS <= '0';
-										DI <= x"05";
-					when 11 => 	nCS <= '0'; -- reg 5
-										R_nW <= '0';
+										D <= x"05";
+					when 11 => 	CSn <= '0'; -- reg 5
+										RW <= '0';
 										RS <= '1';
-										DI <= x"00";
-					when 12 => 	nCS <= '0'; 
-										R_nW <= '0';
+										D <= x"00";
+					when 12 => 	CSn <= '0'; 
+										RW <= '0';
 										RS <= '0';
-										DI <= x"06";
-					when 13 => 	nCS <= '0'; -- reg 6
-										R_nW <= '0';
+										D <= x"06";
+					when 13 => 	CSn <= '0'; -- reg 6
+										RW <= '0';
 										RS <= '1';
-										DI <= x"20";
-					when 14 => 	nCS <= '0'; 
-										R_nW <= '0';
+										D <= x"20";
+					when 14 => 	CSn <= '0'; 
+										RW <= '0';
 										RS <= '0';
-										DI <= x"07";
-					when 15 => 	nCS <= '0'; -- reg 7
-										R_nW <= '0';
+										D <= x"07";
+					when 15 => 	CSn <= '0'; -- reg 7
+										RW <= '0';
 										RS <= '1';
-										DI <= x"20";
-					when 16 => 	nCS <= '0'; 
-										R_nW <= '0';
+										D <= x"20";
+					when 16 => 	CSn <= '0'; 
+										RW <= '0';
 										RS <= '0';
-										DI <= x"08";
-					when 17 => 	nCS <= '0'; -- reg 8
-										R_nW <= '0';
+										D <= x"08";
+					when 17 => 	CSn <= '0'; -- reg 8
+										RW <= '0';
 										RS <= '1';
-										DI <= x"00";
-					when 18 => 	nCS <= '0'; 
-										R_nW <= '0';
+										D <= x"00";
+					when 18 => 	CSn <= '0'; 
+										RW <= '0';
 										RS <= '0';
-										DI <= x"09";
-					when 19 => 	nCS <= '0'; -- reg 9
-										R_nW <= '0';
+										D <= x"09";
+					when 19 => 	CSn <= '0'; -- reg 9
+										RW <= '0';
 										RS <= '1';
-										DI <= x"07";
-					when 20 => 	nCS <= '0'; 
-										R_nW <= '0';
+										D <= x"07";
+					when 20 => 	CSn <= '0'; 
+										RW <= '0';
 										RS <= '0';
-										DI <= x"0A";
-					when 21 => 	nCS <= '0'; -- reg 10
-										R_nW <= '0';
+										D <= x"0A";
+					when 21 => 	CSn <= '0'; -- reg 10
+										RW <= '0';
 										RS <= '1';
-										DI <= x"00";
-					when 22 => 	nCS <= '0'; 
-										R_nW <= '0';
+										D <= x"00";
+					when 22 => 	CSn <= '0'; 
+										RW <= '0';
 										RS <= '0';
-										DI <= x"0B";
-					when 23 => 	nCS <= '0'; -- reg 11
-										R_nW <= '0';
+										D <= x"0B";
+					when 23 => 	CSn <= '0'; -- reg 11
+										RW <= '0';
 										RS <= '1';
-										DI <= x"00";
-					when 24 => 	nCS <= '0'; 
-										R_nW <= '0';
+										D <= x"00";
+					when 24 => 	CSn <= '0'; 
+										RW <= '0';
 										RS <= '0';
-										DI <= x"0C";
-					when 25 => 	nCS <= '0'; -- reg 12
-										R_nW <= '0';
+										D <= x"0C";
+					when 25 => 	CSn <= '0'; -- reg 12
+										RW <= '0';
 										RS <= '1';
-										DI <= x"00";
-					when 26 => 	nCS <= '0'; 
-										R_nW <= '0';
+										D <= x"00";
+					when 26 => 	CSn <= '0'; 
+										RW <= '0';
 										RS <= '0';
-										DI <= x"0D";
-					when 27 => 	nCS <= '0'; -- reg 13
-										R_nW <= '0';
+										D <= x"0D";
+					when 27 => 	CSn <= '0'; -- reg 13
+										RW <= '0';
 										RS <= '1';
-										DI <= x"00";
-					when 28 => 	nCS <= '0'; 
-										R_nW <= '0';
+										D <= x"00";
+					when 28 => 	CSn <= '0'; 
+										RW <= '0';
 										RS <= '0';
-										DI <= x"0E";
-					when 29 => 	nCS <= '0'; -- reg 14
-										R_nW <= '0';
+										D <= x"0E";
+					when 29 => 	CSn <= '0'; -- reg 14
+										RW <= '0';
 										RS <= '1';
-										DI <= x"00";
-					when 30 => 	nCS <= '0'; 
-										R_nW <= '0';
+										D <= x"00";
+					when 30 => 	CSn <= '0'; 
+										RW <= '0';
 										RS <= '0';
-										DI <= x"0F";
-					when 31 => 	nCS <= '0'; -- reg 15
-										R_nW <= '0';
+										D <= x"0F";
+					when 31 => 	CSn <= '0'; -- reg 15
+										RW <= '0';
 										RS <= '1';
-										DI <= x"00";
-					when others => 	nCS <= '0'; -- read, no write
-										R_nW <= '1';
+										D <= x"00";
+					when others => 	CSn <= '0'; -- read, no write
+										RW <= '1';
 										RS <= '0';
-										DI <= x"00";
+										D <= x"00";
 					
 					
 					

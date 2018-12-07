@@ -35,18 +35,10 @@ module UM6845R
 	output reg       HSYNC,
 	output           DE,
 	output           FIELD,
-	
-	// test
-	output           ROW_IND,
-	output     [7:0] HCC,
 
 	output    [13:0] MA,
 	output     [4:0] RA
 );
-
-// test
-assign ROW_IND = row_new;
-assign HCC = hcc;
 
 assign FIELD = ~field & interlace[0];
 
@@ -185,7 +177,7 @@ end
 // horizontal output
 reg hde;
 always @(posedge CLOCK) begin
-	reg [3:0] hsc; //< horizontal sync counter
+	reg [3:0] hsc;
 
 	if(~nRESET) begin
 		hsc    <= 0;
