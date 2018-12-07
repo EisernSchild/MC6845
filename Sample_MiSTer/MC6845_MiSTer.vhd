@@ -332,6 +332,8 @@ architecture basic of emu is
 	-- test
 	signal ROW_IND : std_logic;
 	signal HCC : std_logic_vector(7 downto 0);
+	
+	shared variable init_counter: integer := 0;
 
 begin
 	
@@ -441,10 +443,15 @@ begin
 	-- create clock CLKEN
 	process (Clk_VGA)
 		variable counter : std_logic_vector(2 downto 0) := "000";
+		variable E_counter : integer := 0;
 	begin
 		if rising_edge(Clk_VGA) then
 			counter := counter + 1;
+			E_counter := E_counter +1;
 			if (counter = "100") then CLKEN <= '1'; else CLKEN <= '0'; end if;
+			if ((E_counter > 10) and (E_counter < 30)) then E <= '1';
+			elsif ((E_counter > 50) and (E_counter < 70)) then E <= '0';
+			else E <= '1'; end if;
 		end if;		 
 	end process;
 	
@@ -477,7 +484,7 @@ begin
 --	);
 
 -- entity "crtc6845.vhd" implementation
-	E <= '1';
+	REG_INIT <= '1';
 
 	crtc6845i : crtc6845
 	port map 
@@ -542,149 +549,148 @@ begin
 	-- All other registers are cleared
 	
 
-	process (Clk_VGA)
-		variable init_counter: integer := 0;
-	begin
-		if rising_edge(Clk_VGA) then
-			case init_counter is
-					when 0 => 	CSn <= '0'; 
-										RW <= '0';
-										RS <= '0';
-										D <= x"00";
-					when 1 => 	CSn <= '0'; -- reg 0
-										RW <= '0';
-										RS <= '1';
-										D <= x"28";
-					when 2 => 	CSn <= '0'; 
-										RW <= '0';
-										RS <= '0';
-										D <= x"01";
-					when 3 => 	CSn <= '0'; -- reg 1
-										RW <= '0';
-										RS <= '1';
-										D <= x"20";
-					when 4 => 	CSn <= '0'; 
-										RW <= '0';
-										RS <= '0';
-										D <= x"02";
-					when 5 => 	CSn <= '0'; -- reg 2
-										RW <= '0';
-										RS <= '1';
-										D <= x"21";
-					when 6 => 	CSn <= '0'; 
-										RW <= '0';
-										RS <= '0';
-										D <= x"03";
-					when 7 => 	CSn <= '0'; -- reg 3
-										RW <= '0';
-										RS <= '1';
-										D <= x"03";
-					when 8 => 	CSn <= '0'; 
-										RW <= '0';
-										RS <= '0';
-										D <= x"04";
-					when 9 => 	CSn <= '0'; -- reg 4
-										RW <= '0';
-										RS <= '1';
-										D <= x"24";
-					when 10 => 	CSn <= '0'; 
-										RW <= '0';
-										RS <= '0';
-										D <= x"05";
-					when 11 => 	CSn <= '0'; -- reg 5
-										RW <= '0';
-										RS <= '1';
-										D <= x"00";
-					when 12 => 	CSn <= '0'; 
-										RW <= '0';
-										RS <= '0';
-										D <= x"06";
-					when 13 => 	CSn <= '0'; -- reg 6
-										RW <= '0';
-										RS <= '1';
-										D <= x"20";
-					when 14 => 	CSn <= '0'; 
-										RW <= '0';
-										RS <= '0';
-										D <= x"07";
-					when 15 => 	CSn <= '0'; -- reg 7
-										RW <= '0';
-										RS <= '1';
-										D <= x"20";
-					when 16 => 	CSn <= '0'; 
-										RW <= '0';
-										RS <= '0';
-										D <= x"08";
-					when 17 => 	CSn <= '0'; -- reg 8
-										RW <= '0';
-										RS <= '1';
-										D <= x"00";
-					when 18 => 	CSn <= '0'; 
-										RW <= '0';
-										RS <= '0';
-										D <= x"09";
-					when 19 => 	CSn <= '0'; -- reg 9
-										RW <= '0';
-										RS <= '1';
-										D <= x"07";
-					when 20 => 	CSn <= '0'; 
-										RW <= '0';
-										RS <= '0';
-										D <= x"0A";
-					when 21 => 	CSn <= '0'; -- reg 10
-										RW <= '0';
-										RS <= '1';
-										D <= x"00";
-					when 22 => 	CSn <= '0'; 
-										RW <= '0';
-										RS <= '0';
-										D <= x"0B";
-					when 23 => 	CSn <= '0'; -- reg 11
-										RW <= '0';
-										RS <= '1';
-										D <= x"00";
-					when 24 => 	CSn <= '0'; 
-										RW <= '0';
-										RS <= '0';
-										D <= x"0C";
-					when 25 => 	CSn <= '0'; -- reg 12
-										RW <= '0';
-										RS <= '1';
-										D <= x"00";
-					when 26 => 	CSn <= '0'; 
-										RW <= '0';
-										RS <= '0';
-										D <= x"0D";
-					when 27 => 	CSn <= '0'; -- reg 13
-										RW <= '0';
-										RS <= '1';
-										D <= x"00";
-					when 28 => 	CSn <= '0'; 
-										RW <= '0';
-										RS <= '0';
-										D <= x"0E";
-					when 29 => 	CSn <= '0'; -- reg 14
-										RW <= '0';
-										RS <= '1';
-										D <= x"00";
-					when 30 => 	CSn <= '0'; 
-										RW <= '0';
-										RS <= '0';
-										D <= x"0F";
-					when 31 => 	CSn <= '0'; -- reg 15
-										RW <= '0';
-										RS <= '1';
-										D <= x"00";
-					when others => 	CSn <= '0'; -- read, no write
-										RW <= '1';
-										RS <= '0';
-										D <= x"00";
-					
-					
-					
-				end case;
-				if (init_counter < 5000) then init_counter := init_counter + 1; end if;
-		end if;		
-	end process;
+--		process (CLKEN)
+--		begin
+--			if rising_edge(CLKEN) then
+--				case init_counter is
+--						when 0 => 	CSn <= '0'; 
+--											RW <= '0';
+--											RS <= '0';
+--											D <= x"00";
+--						when 1 => 	CSn <= '0'; -- reg 0
+--											RW <= '0';
+--											RS <= '1';
+--											D <= x"28";
+--						when 2 => 	CSn <= '0'; 
+--											RW <= '0';
+--											RS <= '0';
+--											D <= x"01";
+--						when 3 => 	CSn <= '0'; -- reg 1
+--											RW <= '0';
+--											RS <= '1';
+--											D <= x"20";
+--						when 4 => 	CSn <= '0'; 
+--											RW <= '0';
+--											RS <= '0';
+--											D <= x"02";
+--						when 5 => 	CSn <= '0'; -- reg 2
+--											RW <= '0';
+--											RS <= '1';
+--											D <= x"21";
+--						when 6 => 	CSn <= '0'; 
+--											RW <= '0';
+--											RS <= '0';
+--											D <= x"03";
+--						when 7 => 	CSn <= '0'; -- reg 3
+--											RW <= '0';
+--											RS <= '1';
+--											D <= x"03";
+--						when 8 => 	CSn <= '0'; 
+--											RW <= '0';
+--											RS <= '0';
+--											D <= x"04";
+--						when 9 => 	CSn <= '0'; -- reg 4
+--											RW <= '0';
+--											RS <= '1';
+--											D <= x"24";
+--						when 10 => 	CSn <= '0'; 
+--											RW <= '0';
+--											RS <= '0';
+--											D <= x"05";
+--						when 11 => 	CSn <= '0'; -- reg 5
+--											RW <= '0';
+--											RS <= '1';
+--											D <= x"00";
+--						when 12 => 	CSn <= '0'; 
+--											RW <= '0';
+--											RS <= '0';
+--											D <= x"06";
+--						when 13 => 	CSn <= '0'; -- reg 6
+--											RW <= '0';
+--											RS <= '1';
+--											D <= x"20";
+--						when 14 => 	CSn <= '0'; 
+--											RW <= '0';
+--											RS <= '0';
+--											D <= x"07";
+--						when 15 => 	CSn <= '0'; -- reg 7
+--											RW <= '0';
+--											RS <= '1';
+--											D <= x"20";
+--						when 16 => 	CSn <= '0'; 
+--											RW <= '0';
+--											RS <= '0';
+--											D <= x"08";
+--						when 17 => 	CSn <= '0'; -- reg 8
+--											RW <= '0';
+--											RS <= '1';
+--											D <= x"00";
+--						when 18 => 	CSn <= '0'; 
+--											RW <= '0';
+--											RS <= '0';
+--											D <= x"09";
+--						when 19 => 	CSn <= '0'; -- reg 9
+--											RW <= '0';
+--											RS <= '1';
+--											D <= x"07";
+--						when 20 => 	CSn <= '0'; 
+--											RW <= '0';
+--											RS <= '0';
+--											D <= x"0A";
+--						when 21 => 	CSn <= '0'; -- reg 10
+--											RW <= '0';
+--											RS <= '1';
+--											D <= x"00";
+--						when 22 => 	CSn <= '0'; 
+--											RW <= '0';
+--											RS <= '0';
+--											D <= x"0B";
+--						when 23 => 	CSn <= '0'; -- reg 11
+--											RW <= '0';
+--											RS <= '1';
+--											D <= x"00";
+--						when 24 => 	CSn <= '0'; 
+--											RW <= '0';
+--											RS <= '0';
+--											D <= x"0C";
+--						when 25 => 	CSn <= '0'; -- reg 12
+--											RW <= '0';
+--											RS <= '1';
+--											D <= x"00";
+--						when 26 => 	CSn <= '0'; 
+--											RW <= '0';
+--											RS <= '0';
+--											D <= x"0D";
+--						when 27 => 	CSn <= '0'; -- reg 13
+--											RW <= '0';
+--											RS <= '1';
+--											D <= x"00";
+--						when 28 => 	CSn <= '0'; 
+--											RW <= '0';
+--											RS <= '0';
+--											D <= x"0E";
+--						when 29 => 	CSn <= '0'; -- reg 14
+--											RW <= '0';
+--											RS <= '1';
+--											D <= x"00";
+--						when 30 => 	CSn <= '0'; 
+--											RW <= '0';
+--											RS <= '0';
+--											D <= x"0F";
+--						when 31 => 	CSn <= '0'; -- reg 15
+--											RW <= '0';
+--											RS <= '1';
+--											D <= x"00";
+--						when others => 	CSn <= '0'; -- read, no write
+--											RW <= '1';
+--											RS <= '0';
+--											D <= x"00";
+--						
+--						
+--						
+--					end case;
+--					if (init_counter < 5000) then init_counter := init_counter + 1; end if;
+--			end if;		
+--		end process;
 		
 end basic;
