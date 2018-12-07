@@ -229,6 +229,7 @@ architecture basic of emu is
 		
 		-- test
 		ROW_IND : out std_logic;
+		HCC : out std_logic_vector(7 downto 0);
 
 		MA : out std_logic_vector(13 downto 0);
 		RA : out std_logic_vector(4 downto 0)
@@ -253,7 +254,7 @@ architecture basic of emu is
 -- data fields
 	signal status : std_logic_vector(31 downto 0);
 	signal clock_locked : std_logic;
-	signal Clk_VGA, Clk_CRT : std_logic;
+	signal Clk_VGA, Clk_temp : std_logic;
 	-- video
 	signal V_HS, V_VS, V_DE: std_logic;
 	signal linecount : std_logic_vector(11 downto 0);
@@ -281,6 +282,7 @@ architecture basic of emu is
 	
 	-- test
 	signal ROW_IND : std_logic;
+	signal HCC : std_logic_vector(7 downto 0);
 
 begin
 	
@@ -325,7 +327,7 @@ begin
 	hps : hps_io
 	generic map (STRLEN => (CONF_STR'length) + (CONF_STR2'length) + (CONF_STR3'length) + (CONF_STR4'length))
 	port map (
-		clk_sys => Clk_CRT,
+		clk_sys => Clk_temp,
 		HPS_BUS => HPS_BUS,
 		conf_str => to_slv(CONF_STR & CONF_STR2 & CONF_STR3 & CONF_STR4),
 		status => status,
@@ -353,7 +355,7 @@ begin
 		rst      => '0',
 		outclk_0 => Clk_VGA,
 		outclk_1 => SDRAM_CLK,
-		outclk_2 => Clk_CRT,
+		outclk_2 => Clk_temp,
 		locked   => clock_locked
 	);
 	
@@ -375,9 +377,9 @@ begin
 		clk => Clk_VGA,                
 		reset_n => '1',
 		
-		VGA_R4 => ROW_IND & "000", -- linecount(3 downto 0),
+		VGA_R4 => HCC(7 downto 4), -- ROW_IND & "000", -- linecount(3 downto 0),
 		VGA_G4 => ROW_IND & "000", -- linecount(7 downto 4),
-		VGA_B4 => linecount(11 downto 8),		
+		VGA_B4 => HCC(3 downto 0), -- linecount(11 downto 8),		
 
 		VGA_HS => V_HS,
 		VGA_VS => V_VS,
@@ -387,6 +389,16 @@ begin
 		VGA_B => VGA_B
 	);
 	
+	-- create clock CLKEN
+	process (Clk_VGA)
+		variable counter : std_logic_vector(2 downto 0) := "000";
+	begin
+		if rising_edge(Clk_VGA) then
+			counter := counter + 1;
+			if (counter = "100") then CLKEN <= '1'; else CLKEN <= '0'; end if;
+		end if;		 
+	end process;
+	
 -- module file "UM6845R.v" implementation
 	CRTC_TYPE <= '0';
 	ENABLE <= '1';    
@@ -395,7 +407,7 @@ begin
 	port map
 	(
 		CLOCK => Clk_VGA, -- CLOCK,   
-		CLKEN => Clk_CRT, -- CLKEN,    
+		CLKEN => CLKEN,    
 		nRESET => '1', -- nRESET,  
 		CRTC_TYPE => CRTC_TYPE,  
 
@@ -411,7 +423,9 @@ begin
 		DE => DE,
 		FIELD => FIELD,
 		
+		-- test
 		ROW_IND => ROW_IND,
+		HCC => HCC,
 
 		MA  => MA,
 		RA  => RA

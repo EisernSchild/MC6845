@@ -38,6 +38,7 @@ module UM6845R
 	
 	// test
 	output           ROW_IND,
+	output     [7:0] HCC,
 
 	output    [13:0] MA,
 	output     [4:0] RA
@@ -45,6 +46,7 @@ module UM6845R
 
 // test
 assign ROW_IND = row_new;
+assign HCC = hcc;
 
 assign FIELD = ~field & interlace[0];
 
