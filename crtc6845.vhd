@@ -168,22 +168,45 @@ process(E,REG_INIT)
 begin
 	if falling_edge(E) then
 	if REG_INIT = '1' then
+		-- R0_h_total      40 28 - 40*8 = 320 pixel
+		-- R1_h_displayed  32 20 - 32*8 = 256 pixel
+		-- R2_h_sync_pos   33 21 - 33*8 = 264 pixel
+		-- R3_v_sync_width 03 03 -  3*8 =  24 pixel
+		-- R4_v_total      36 24 - 36*8 = 288 pixel
+		-- R5_v_total_adj  00 00 - 0 pixel
+		-- R6_v_displayed  32 20 - 32*8 = 256 pixel
+		-- R7_v_sync_pos   32 20 - 32*8 = 256 pixel
+		-- R9_v_max_line   07 07
+		-- All other registers are cleared
 		REGIO_AR <= b"0" & x"0";
-		REG_HT <= x"65";
-		REG_HD <= x"50";
-		REG_HSP <= x"56";
-		REG_HSW <= x"9";
-		REG_SL <= '0' & x"b";
-		REG_VT <= b"001" & x"8"; --18
-		REG_ADJ <= b"0" & x"a";
-		REG_VD <= b"001" & x"8"; --18
-		REG_VSP <= b"001" & x"8";--18
-		REG_CURST <= b"000" & x"0";
-		REG_CUREND <= b"0" & x"B";
-		REG_SA_H <= b"00" & x"0";
-		REG_SA_L <= x"80";
-		REG_CUR_H <= b"00" & x"0";
-		REG_CUR_L <= x"80";
+		REG_HT <= x"28";
+		REG_HD <= x"20";
+		REG_HSP <= x"21";
+		REG_HSW <= x"3";
+		REG_VT <= b"010" & x"4"; --24
+		REG_ADJ <= b"0" & x"0";
+		REG_VD <= b"010" & x"0"; --20
+		REG_VSP <= b"010" & x"0";--20
+		REG_SL <= b"0" & x"7";
+		
+
+		--		-- original code
+		--		REGIO_AR <= b"0" & x"0";
+		--		REG_HT <= x"65";
+		--		REG_HD <= x"50";
+		--		REG_HSP <= x"56";
+		--		REG_HSW <= x"9";
+		--		REG_SL <= '0' & x"b";
+		--		REG_VT <= b"001" & x"8"; --18
+		--		REG_ADJ <= b"0" & x"a";
+		--		REG_VD <= b"001" & x"8"; --18
+		--		REG_VSP <= b"001" & x"8";--18
+		--		REG_CURST <= b"000" & x"0";
+		--		REG_CUREND <= b"0" & x"B";
+		--		REG_SA_H <= b"00" & x"0";
+		--		REG_SA_L <= x"80";
+		--		REG_CUR_H <= b"00" & x"0";
+		--		REG_CUR_L <= x"80";
 	end if;
 	end if;
 --pragma translate_off
