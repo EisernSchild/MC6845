@@ -198,6 +198,7 @@ architecture basic of emu is
 		VGA_G4 : in std_logic_vector(3 downto 0);
 		VGA_B4 : in std_logic_vector(3 downto 0);  
 		
+		CE_PIXEL : out std_logic;
 		VGA_HS : out std_logic;
 		VGA_VS : out std_logic;
 		VGA_DE : out std_logic;
@@ -352,10 +353,13 @@ begin
 	VIDEO_ARX <= x"10";
 	VIDEO_ARY <= x"09";
 	CLK_VIDEO <= Clk_VGA;
-	CE_PIXEL <= '1';
-	VGA_HS <= not V_HS;
-	VGA_VS <= not V_VS;
+-- CE_PIXEL <= '1';
+	VGA_HS <= V_HS;
+	VGA_VS <= V_VS;
 	VGA_DE <= V_DE;
+--	VGA_HS <= not V_HS;
+--	VGA_VS <= not V_VS;
+--	VGA_DE <= V_DE;
 --	VGA_HS <= not HSYNC;
 --	VGA_VS <= not VSYNC;
 --	VGA_DE <= not DE;
@@ -432,6 +436,7 @@ begin
 		VGA_G4 => H & "000", -- linecount(7 downto 4),
 		VGA_B4 => linecount(3 downto 0),		
 
+		CE_PIXEL => CE_PIXEL,
 		VGA_HS => V_HS,
 		VGA_VS => V_VS,
 		VGA_DE => V_DE,

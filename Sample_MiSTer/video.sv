@@ -37,6 +37,12 @@
 //
 // --------------------------------------------------------------------
 
+// define to use MiSTer video mixer
+`define VIDEO_MIXER
+`ifdef VIDEO_MIXER
+reg  HBlank, VBlank, HSync, VSync;
+`endif
+
 module video
 (                                    
   input						clk,                
@@ -45,7 +51,8 @@ module video
   input 			[3:0]		VGA_R4,
   input			[3:0]		VGA_G4,
   input			[3:0]		VGA_B4,
- 
+  
+  output reg            CE_PIXEL, 
   output	reg				VGA_HS,             
   output	reg				VGA_VS,           
   output	reg				VGA_DE,
@@ -76,8 +83,7 @@ wire [11:0] h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp;
 //-- Active video              (D)  15.253	ms = 256
 
 assign {h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp} = {12'd256,	12'd8, 12'd40, 12'd16, 12'd256, 12'd8, 12'd7, 12'd16}; 
-	 	 
-
+	
  //=====Mode:640x350		70		25.175	assign {h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp} = {640,	16,	96,	48,	350,	37,	2,	60};	 	 
  //=====Mode:640x350		85		31.5		assign {h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp} = {640,	32,	64,  	96,	350,	32,	3,	60};  	 
  //=====Mode:640x400		70		25.175	assign {h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp} = {640,	16,	96,  	48,	400,	12,	2,	35}; 	 	 
@@ -213,7 +219,10 @@ always @ (posedge clk or negedge reset_n)
 		h_act_d	<=	1'b0;
 		h_count	<=	12'b0;
 		pixel_x	<=	8'b0;
+`ifdef VIDEO_MIXER
+`else
 		VGA_HS	<=	1'b1;
+`endif
 		h_act		<=	1'b0;
 	end
 	else
@@ -230,10 +239,17 @@ always @ (posedge clk or negedge reset_n)
 		else
 			pixel_x	<=	8'b0;
 
+`ifdef VIDEO_MIXER
+		if (hs_end && !h_max)
+			HSync <=	1'b1;
+		else
+			HSync	<=	1'b0;
+`else
 		if (hs_end && !h_max)
 			VGA_HS	<=	1'b1;
 		else
 			VGA_HS	<=	1'b0;
+`endif
 
 		if (hr_start)
 			h_act		<=	1'b1;
@@ -247,7 +263,10 @@ always@(posedge clk or negedge reset_n)
 	begin
 		v_act_d		<=	1'b0;
 		v_count		<=	12'b0;
+`ifdef VIDEO_MIXER
+`else
 		VGA_VS		<=	1'b1;
+`endif
 		v_act			<=	1'b0;
 		color_mode	<=	4'b0;
 	end
@@ -262,10 +281,17 @@ always@(posedge clk or negedge reset_n)
 			else
 				v_count	<=	v_count + 12'b000000000001;
 
+`ifdef VIDEO_MIXER
+			if (vs_end && !v_max)
+				VSync	<=	1'b1;
+			else
+				VSync	<=	1'b0;
+`else
 			if (vs_end && !v_max)
 				VGA_VS	<=	1'b1;
 			else
 				VGA_VS	<=	1'b0;
+`endif
 
 			if (vr_start)
 				v_act <=	1'b1;
@@ -294,20 +320,26 @@ always@(posedge clk or negedge reset_n)
 		end
 	end
 
+
 //============= pixel mux
 always @(posedge clk or negedge reset_n)
 begin
 	if (!reset_n)
 	begin
+`ifdef VIDEO_MIXER
+`else
 		VGA_DE		<=	1'b0;
 		pre_vga_de	<=	1'b0;
 		boarder		<=	1'b0;		
+`endif	
 	end
 	else
-	begin
+	begin		
+`ifdef VIDEO_MIXER
+`else
 		VGA_DE		<=	pre_vga_de;
 		pre_vga_de	<=	v_act && h_act;
-    
+		
 		if ((!h_act_d&&h_act) || hr_end || (!v_act_d&&v_act) || vr_end)
 			boarder	<=	1'b1;
 		else
@@ -321,7 +353,29 @@ begin
 			VGA_G <= {VGA_G4, VGA_G4};
 			VGA_B <= {VGA_B4, VGA_B4};
 		end			
+`endif
 	end
 end
+
+`ifdef VIDEO_MIXER
+assign HBlank = !h_act;
+assign VBland = !v_act;
+video_mixer #(.LINE_LENGTH(320), .HALF_DEPTH(0)) video_mixer
+(
+	.*,
+	.clk_sys(clk),
+	.ce_pix(1),
+	.ce_pix_out(CE_PIXEL),
+
+	.scanlines(2'h00),
+	.hq2x(0),
+	.scandoubler(0),
+	.mono(0),
+
+	.R({VGA_R4, VGA_R4}),
+	.G({VGA_G4, VGA_G4}),
+	.B({VGA_B4, VGA_B4})
+);
+`endif
 
 endmodule
