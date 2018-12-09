@@ -179,11 +179,11 @@ begin
 		-- R9_v_max_line   07 07
 		-- All other registers are cleared
 		REGIO_AR <= b"0" & x"0";
-		REG_HT <= x"28";
+		REG_HT <= x"27";-- 28"; -- test !! take 39 instead of 40
 		REG_HD <= x"20";
 		REG_HSP <= x"21";
 		REG_HSW <= x"3";
-		REG_VT <= b"010" & x"4"; --24
+		REG_VT <= b"010" & x"3"; --24 -- test !! take 35 instead of 36
 		REG_ADJ <= b"0" & x"0";
 		REG_VD <= b"010" & x"0"; --20
 		REG_VSP <= b"010" & x"0";--20

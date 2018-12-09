@@ -239,31 +239,6 @@ architecture basic of emu is
 		VERT_RST: inout STD_LOGIC
 	 );
 	end component crtc6845;
-		
--- module "UM6845R.v" definition in VHDL
-	component UM6845R is port
-	(
-		CLOCK : in std_logic;    
-		CLKEN : in std_logic;    
-		nRESET : in std_logic;    
-		CRTC_TYPE : in std_logic;    
-
-		ENABLE : in std_logic;    
-		nCS : in std_logic;    
-		R_nW : in std_logic;    
-		RS : in std_logic;    
-		DI : in std_logic_vector(7 downto 0);  
-		DO : out std_logic_vector(7 downto 0);
-		
-		VSYNC : out std_logic;
-		HSYNC : out std_logic;
-		DE : out std_logic;
-		FIELD : out std_logic;
-
-		MA : out std_logic_vector(13 downto 0);
-		RA : out std_logic_vector(4 downto 0)
-	);
-	end component UM6845R;
 
 -- User io helper : convert string to std_logic_vector to be given to user_io
 	function to_slv(s: string) return std_logic_vector is 
@@ -434,7 +409,7 @@ begin
 		
 		VGA_R4 => RA(3 downto 0), -- HCC(7 downto 4), -- ROW_IND & "000", -- linecount(3 downto 0),
 		VGA_G4 => H & "000", -- linecount(7 downto 4),
-		VGA_B4 => linecount(3 downto 0),		
+		VGA_B4 => MA(3 downto 0), -- linecount(3 downto 0),		
 
 		CE_PIXEL => CE_PIXEL,
 		VGA_HS => V_HS,
@@ -445,7 +420,11 @@ begin
 		VGA_B => VGA_B
 	);
 	
-	-- create clock CLKEN
+	-- create clock CLKEN :
+	-- All timing  in  the  CRTC  is  derived from the  ClK  input.  In
+	-- alphanumeric terminals, this signal  is  the character rate. The
+	-- video rate or  "dot"  clock  is  externally divided by high-speed
+	-- logic  (TTL)  to generate the  ClK  input.
 	process (Clk_VGA)
 		variable counter : std_logic_vector(2 downto 0) := "000";
 		variable E_counter : integer := 0;
@@ -459,34 +438,6 @@ begin
 			else E <= '1'; end if;
 		end if;		 
 	end process;
-	
--- module file "UM6845R.v" implementation
---	CRTC_TYPE <= '1';
---	ENABLE <= '1';    
---	
---	UM6845R1 : UM6845R
---	port map
---	(
---		CLOCK => Clk_VGA, -- CLOCK,   
---		CLKEN => CLKEN,    
---		nRESET => '1', -- nRESET,  
---		CRTC_TYPE => CRTC_TYPE,  
---
---		ENABLE => ENABLE, 
---		nCS => nCS ,
---		R_nW => R_nW,
---		RS => RS,
---		DI => DI,
---		DO => DO,
---		
---		VSYNC  => VSYNC,
---		HSYNC  => HSYNC,
---		DE => DE,
---		FIELD => FIELD,
---
---		MA  => MA,
---		RA  => RA
---	);
 
 -- entity "crtc6845.vhd" implementation
 	REG_INIT <= '1';
