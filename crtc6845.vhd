@@ -35,6 +35,9 @@
 --   - verification in a real application                                    --
 --                                                                           --
 --===========================================================================--
+--
+-- Changes : 
+-- 2018-12-10 by Denis Reischl: Taito Qix hardware init (32x32x8 chars - 256x256x8 pixels) 
 
 library IEEE;
 use IEEE.std_logic_1164.all;
@@ -168,6 +171,8 @@ process(E,REG_INIT)
 begin
 	if falling_edge(E) then
 	if REG_INIT = '1' then
+		
+		-- Taito Qix hardware init (32x32x8 chars - 256x256x8 pixels)
 		-- R0_h_total      40 28 - 40*8 = 320 pixel
 		-- R1_h_displayed  32 20 - 32*8 = 256 pixel
 		-- R2_h_sync_pos   33 21 - 33*8 = 264 pixel
@@ -178,12 +183,13 @@ begin
 		-- R7_v_sync_pos   32 20 - 32*8 = 256 pixel
 		-- R9_v_max_line   07 07
 		-- All other registers are cleared
+		
 		REGIO_AR <= b"0" & x"0";
-		REG_HT <= x"27";-- 28"; -- test !! take 39 instead of 40
+		REG_HT <= x"27";-- 28"; -- !! take 39 instead of 40 !! (HTotal - 1)
 		REG_HD <= x"20";
 		REG_HSP <= x"21";
 		REG_HSW <= x"3";
-		REG_VT <= b"010" & x"3"; --24 -- test !! take 35 instead of 36
+		REG_VT <= b"010" & x"3"; --24 -- !! take 35 instead of 36 !! (VTotal - 1)
 		REG_ADJ <= b"0" & x"0";
 		REG_VD <= b"010" & x"0"; --20
 		REG_VSP <= b"010" & x"0";--20

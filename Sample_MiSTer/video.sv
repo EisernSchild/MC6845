@@ -78,11 +78,11 @@ wire [11:0] h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp;
 //-- Vertical :
 //-- Total time for each frame      16.683	ms = 288
 //-- Front porch               (A)   0.318	ms =   8
-//-- Sync pulse length         (B)   0.064	ms =   8 - 1
+//-- Sync pulse length         (B)   0.064	ms =   8 
 //-- Back porch                (C)   1.048	ms =  16
 //-- Active video              (D)  15.253	ms = 256
 
-assign {h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp} = {12'd256,	12'd8, 12'd40, 12'd16, 12'd256, 12'd8, 12'd7, 12'd16}; 
+assign {h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp} = {12'd256,	12'd8, 12'd40, 12'd16, 12'd256, 12'd8, 12'd8, 12'd16}; 
 	
  //=====Mode:640x350		70		25.175	assign {h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp} = {640,	16,	96,	48,	350,	37,	2,	60};	 	 
  //=====Mode:640x350		85		31.5		assign {h_display, h_fp, h_pulse, h_bp, v_display, v_fp, v_pulse, v_bp} = {640,	32,	64,  	96,	350,	32,	3,	60};  	 

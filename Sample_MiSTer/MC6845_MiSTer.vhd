@@ -408,7 +408,7 @@ begin
 		reset_n => '1',
 		
 		VGA_R4 => RA(3 downto 0), -- HCC(7 downto 4), -- ROW_IND & "000", -- linecount(3 downto 0),
-		VGA_G4 => H & "000", -- linecount(7 downto 4),
+		VGA_G4 => V & "000", -- linecount(7 downto 4),
 		VGA_B4 => MA(3 downto 0), -- linecount(3 downto 0),		
 
 		CE_PIXEL => CE_PIXEL,
