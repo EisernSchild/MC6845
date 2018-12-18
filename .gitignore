@@ -38,3 +38,4 @@ c5_pin_model_dump.txt
 *.xml
 *_netlist
 *.cdf
+Sample_MiSTer/MC6845.qsf
