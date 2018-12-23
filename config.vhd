@@ -44,8 +44,8 @@ use IEEE.math_real.all;
 package CONFIG is
 
 	-- Don't change these unless you know what you are doing.
-	constant MA_WIDTH	: INTEGER	:= 14;
-	constant RA_WIDTH	: INTEGER	:= 5;
+	constant MA_WIDTH	: INTEGER	:= 10;
+	constant RA_WIDTH	: INTEGER	:= 3;
 	constant DB_WIDTH	: INTEGER	:= 8;
 	constant AR_WIDTH	: INTEGER	:= 5;
 	

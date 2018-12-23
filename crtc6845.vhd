@@ -57,7 +57,8 @@ entity crtc6845 is
 	RS     : in STD_LOGIC;
 	CSn    : in STD_LOGIC;
 	RW     : in STD_LOGIC;
-	D      : inout STD_LOGIC_VECTOR (DB_WIDTH-1 downto 0);
+	DI     : in STD_LOGIC_VECTOR (DB_WIDTH-1 downto 0);
+	DO     : out STD_LOGIC_VECTOR (DB_WIDTH-1 downto 0);
 	RESETn : in STD_LOGIC;
 	CLK    : in STD_LOGIC;
 	-- not standard
@@ -113,10 +114,10 @@ signal REG_LP_L		: STD_LOGIC_VECTOR (7 downto 0);
 -- Counters
 signal CTR_HORIZ	: UNSIGNED (7 downto 0);
 signal CTR_HSW		: UNSIGNED (3 downto 0);
-signal CTR_SL		: UNSIGNED (4 downto 0);
+signal CTR_SL		: UNSIGNED (RA_WIDTH-1 downto 0); --(4 downto 0); -- changed 2018-12-22 D.R.
 signal CTR_VERT		: UNSIGNED (6 downto 0);
 signal CTR_VSW		: UNSIGNED (4 downto 0);
-signal CTR_LAG		: UNSIGNED (13 downto 0);
+signal CTR_LAG		: UNSIGNED (MA_WIDTH-1 downto 0); -- (13 downto 0); -- changed 2018-12-22 D.R.
 
 -- I/O address register
 signal REGIO_AR		: STD_LOGIC_VECTOR (AR_WIDTH-1 downto 0);
@@ -137,7 +138,7 @@ signal	VERT_RST: STD_LOGIC;
 -- Shared Variables
 signal Hdisp: STD_LOGIC;
 signal Vdisp: STD_LOGIC;
-shared variable ROWaddr: UNSIGNED (13 downto 0);
+shared variable ROWaddr: UNSIGNED (MA_WIDTH-1 downto 0); -- changed 2018-12-22 D.R.
 
 begin
 
@@ -148,20 +149,20 @@ begin
 		if CSn = '0' and RW = '1' and RS = '1' then
 			case REGIO_AR is
 				when INDEX_CUR_H =>
-					D(5 downto 0) <= REG_CUR_H;
-					D(7 downto 6) <= "00";
+					DO(5 downto 0) <= REG_CUR_H;
+					DO(7 downto 6) <= "00";
 				when INDEX_CUR_L =>
-					D <= REG_CUR_L;
+					DO <= REG_CUR_L;
 				when INDEX_LP_H =>
-					D(5 downto 0) <= REG_LP_H;
-					D(7 downto 6) <= "00";
+					DO(5 downto 0) <= REG_LP_H;
+					DO(7 downto 6) <= "00";
 				when INDEX_LP_L =>
-					D <= REG_LP_L;
+					DO <= REG_LP_L;
 				when others =>
-					D <= (others => '0');
+					DO <= (others => '0');
 			end case;
 		else
-			D <= (others => 'Z');
+			DO <= (others => 'Z');
 		end if;
 	end if;
 end process;
@@ -218,39 +219,39 @@ begin
 --pragma translate_off
 		if CSn = '0' and RW = '0' then
 			if RS = '0' then
-				REGIO_AR <= D (AR_WIDTH-1 downto 0);
+				REGIO_AR <= DI (AR_WIDTH-1 downto 0);
 			else
 				case REGIO_AR is
 					when INDEX_HT =>
-						REG_HT <= D;
+						REG_HT <= DI;
 					when INDEX_HD =>
-						REG_HD <= D;
+						REG_HD <= DI;
 					when INDEX_HSP =>
-						REG_HSP <= D;
+						REG_HSP <= DI;
 					when INDEX_HSW =>
-						REG_HSW <= D(3 downto 0);
+						REG_HSW <= DI(3 downto 0);
 					when INDEX_SL =>
-						REG_SL <= D(4 downto 0);
+						REG_SL <= DI(4 downto 0);
 					when INDEX_VT =>
-						REG_VT <= D(6 downto 0);
+						REG_VT <= DI(6 downto 0);
 					when INDEX_ADJ =>
-						REG_ADJ <= D(4 downto 0);
+						REG_ADJ <= DI(4 downto 0);
 					when INDEX_VD =>
-						REG_VD <= D(6 downto 0);
+						REG_VD <= DI(6 downto 0);
 					when INDEX_VSP =>
-						REG_VSP <= D(6 downto 0);
+						REG_VSP <= DI(6 downto 0);
 					when INDEX_CURST =>
-						REG_CURST <= D(6 downto 0);
+						REG_CURST <= DI(6 downto 0);
 					when INDEX_CUREND =>
-						REG_CUREND <= D(4 downto 0);
+						REG_CUREND <= DI(4 downto 0);
 					when INDEX_SA_H =>
-						REG_SA_H <= D(5 downto 0);
+						REG_SA_H <= DI(5 downto 0);
 					when INDEX_SA_L =>
-						REG_SA_L <= D;
+						REG_SA_L <= DI;
 					when INDEX_CUR_H =>
-						REG_CUR_H <= D(5 downto 0);
+						REG_CUR_H <= DI(5 downto 0);
 					when INDEX_CUR_L =>
-						REG_CUR_L <= D;
+						REG_CUR_L <= DI;
 					when others =>
 						null;
 				end case;
@@ -433,11 +434,11 @@ ROWaddr_p:
 process(RESETn, CHROW_CLK, VERT_RST, REG_SA_H, REG_SA_L)
 begin
 	if RESETn = '0' then
-		ROWaddr := MAKE_UNSIGNED(REG_SA_H & REG_SA_L);
+		ROWaddr := MAKE_UNSIGNED(REG_SA_H & REG_SA_L)(MA_WIDTH-1 downto 0); -- changed 2018-12-22 D.R.
 	elsif rising_edge(CHROW_CLK) then
 		ROWaddr := ROWaddr + MAKE_UNSIGNED(REG_HD);
 		if VERT_RST = '1' then
-			ROWaddr := MAKE_UNSIGNED(REG_SA_H & REG_SA_L);
+			ROWaddr := MAKE_UNSIGNED(REG_SA_H & REG_SA_L)(MA_WIDTH-1 downto 0); -- changed 2018-12-22 D.R.
 		end if;
 	end if;
 end process;
@@ -446,7 +447,7 @@ LAG_p:
 process(CLK, RESETn, H, REG_SA_H, REG_SA_L)
 begin
 	if RESETn = '0' then
-		CTR_LAG <= MAKE_UNSIGNED(REG_SA_H & REG_SA_L);
+		CTR_LAG <= MAKE_UNSIGNED(REG_SA_H & REG_SA_L)(MA_WIDTH-1 downto 0); -- changed 2018-12-22 D.R.
 	elsif rising_edge(CLK) then
 		if H = '1' then
 			CTR_LAG <= ROWaddr;
@@ -465,7 +466,7 @@ process(CLK, LPSTBn)
 begin
 	if rising_edge(CLK) then
 		if LPSTBn = '0' then
-			REG_LP_H <= MAKE_BINARY(CTR_LAG(13 downto 8));
+			REG_LP_H(MA_WIDTH-9 downto 0) <= MAKE_BINARY(CTR_LAG(MA_WIDTH-1 downto 8)); -- changed 2018-22-12 D.R.
 			REG_LP_L <= MAKE_BINARY(CTR_LAG(7 downto 0));
 		end if;
 	end if;
@@ -477,7 +478,7 @@ end process;
 CURSOR_p:
 process(CTR_LAG, REG_CUR_H, REG_CUR_L)
 begin
-	if CTR_LAG = MAKE_UNSIGNED(REG_CUR_H & REG_CUR_L) then
+	if CTR_LAG = MAKE_UNSIGNED(REG_CUR_H & REG_CUR_L)(MA_WIDTH-1 downto 0) then -- changed 2018-12-22 D.R.
 		CURSOR_ACTIVE <= '1';
 	else
 		CURSOR_ACTIVE <= '0';
